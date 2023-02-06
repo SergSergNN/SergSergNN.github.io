@@ -22,7 +22,7 @@
    background-color: #CCCCCC;
    position: fixed;
    padding: 1px;
-   top: 10%;
+   top: 2%;
    left: 10%;
    display: none;
 }
@@ -65,15 +65,15 @@ Formula and color are set for each graph<br>
 <div class="listFunc"></div>
 </div>
 
-<div class="divHelp">Graph JS<br>
+<div class="divHelp">
 <div id="english">
-This application draws graphs of functions.<br>
+Graph JS - This application draws graphs of functions.<br>
 Features:<br>
 <ul>
 <li>Draws multiple graphs with different colors<br>
 This data is stored in permanent memory (localStorage)<br>
 and is available the next time the application is launched.
-<li>Zoom in, zoom out (+ - keys on Numpad)<br>
+<li>Zoom in, zoom out (+ - keys)<br>
 <li>Move left, right,up, down (cursor keys)<br>
 <li>Draws the derivative of a function (key D)<br>
 <li>Calculates a definite integral.<br>
@@ -87,12 +87,14 @@ The more points, the more pricision the graph is.<br>
 But it takes more time to draw.<br>
 </ul>
 
+The latest version of the program is available at:<br>
+<a href="https://sergsergnn.github.io/gr/graph-js.htm">https://sergsergnn.github.io/gr/graph-js.htm</a><br><br>
 Author: Nechepurenko Sergey<br>
 Email: sergnech.sw@gmail.com<br>
 Phone/Whatsapp/Viber/Telegram: +972533586061
 </div>
 <div id="russian">
-Это приложение предназначено для построения графиков.<br>
+Graph JS - Это приложение предназначено для построения графиков.<br>
 Возможности
 <ul>
 <li>Одновременно может быть построено несколько различных графиков.<br>
@@ -100,7 +102,7 @@ Phone/Whatsapp/Viber/Telegram: +972533586061
 Для каждого графика можно указать формулу и цвет.<br>
 Формулы и цвета графиков сохраняются в постоянном хранилище браузера (localStorage)<br>
 и сохраняются при последующем запуске приложения.
-<li>Кнопками + и – на цифровой клавиатуре можно увеличить или уменьшить масштаб.
+<li>Кнопками + и – на клавиатуре можно увеличить или уменьшить масштаб.
 <li>Стрелками курсора можно перемещать график влево, вправо, вверх или вниз.
 <li>Нажатием клавиши D можно отобразить и скрыть <b>производную функции.</b><br>
 Производная вычисляется как приращение функции делить на приращение аргумента.
@@ -118,8 +120,9 @@ Phone/Whatsapp/Viber/Telegram: +972533586061
 Увеличение количества точек приведет к более четкому построению, графика,<br>
 производной и более точному вычислению интеграла. Но увеличит время построения.
 </ul>
-Video instruction: <a href="https://youtu.be/8JLrabJ0_68">https://youtu.be/8JLrabJ0_68</a><br>
-
+Видео инструкция: <a href="https://youtu.be/8JLrabJ0_68">https://youtu.be/8JLrabJ0_68</a><br>
+Последняя версия программы доступна по адресу: <a href="https://sergsergnn.github.io/gr/graph-js.htm">https://sergsergnn.github.io/gr/graph-js.htm</a><br>
+<br>
 Об авторе.<br>
 Сергей Нечепуренко.<br>
 Email: sergnech.sw@gmail.com<br>
@@ -422,19 +425,18 @@ else if (event.keyCode==80){// P precision
       }
       showInpBox(precision,'Enter precision','')
    }
-else if (event.keyCode==109){// -
+else if ((event.keyCode==109||event.keyCode==189)) {// -
       minX-=dd
       maxX+=dd
       minY-=dd
       change=true
    }
-else if (event.keyCode==107)  {// +
+else if ((event.keyCode==107||event.keyCode==187))  {// +
       minX+=dd
       maxX-=dd
       minY+=dd
       change=true
    }
-
 if (change){
       drawGrid()
       drawAllFunc()
@@ -534,14 +536,12 @@ while (x<maxX){
 
    x=x+dx
 }
-
 if (showI && ff){
    ctx.fillStyle="#FFFF00"
    ctx.font = "20px sans-serif";
    s=Math.round(s*10000)/10000
    ctx.fillText('S='+s+ ' (Low limit='+lowLimit+' Up limit='+upLimit+' )', 200, 30);
 }
-
 }
 setSize()
 drawGrid()
