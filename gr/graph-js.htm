@@ -76,11 +76,12 @@ and is available the next time the application is launched.
 <li>Zoom in, zoom out (+ - keys)<br>
 <li>Move left, right,up, down (cursor keys)<br>
 <li>Draws the derivative of a function (key D)<br>
+<li>Draws the pervoobraznue of a function (key i)<br>
 <li>Calculates a definite integral.<br>
 The integral value is displayed at the top left of <br>the screen under the letter S<br>
 Press key A to set the low limit of integral (default 0).<br>
 Press key B to set the up limit of integral (default 1).<br>
-Press key i to calculate and show integral<br>
+Press key S to calculate and show integral<br>
 <li>Press key P Set pricision of plotting. <br>
 Number of points on the X-axis. The default is 1000.<br>
 The more points, the more pricision the graph is.<br>
@@ -106,14 +107,15 @@ Graph JS - Это приложение предназначено для пос�
 <li>Стрелками курсора можно перемещать график влево, вправо, вверх или вниз.
 <li>Нажатием клавиши D можно отобразить и скрыть <b>производную функции.</b><br>
 Производная вычисляется как приращение функции делить на приращение аргумента.
-<li>Нажатием клавиши i можно вычислить и отобразить <b>определенный интеграл</b> функции.<br>
+<li>Нажатием клавиши i можно отобразить и скрыть <b>первообрвзную функции.</b><br>
+<li>Нажатием клавиши S можно вычислить и отобразить <b>определенный интеграл</b> функции.<br>
 Значение интеграла отображается в верхней левой части экрана под буквой S<br>
 По умолчанию нижний предел интегрирования равен 0, а верхний равен 1.<br>
 Нажатием клавиши A можно изменить нижний предел интегрирования.<br>
 Нажатием клавиши B можно изменить верхний предел интегрирования.<br>
 Интеграл вычисляется как площадь криволинейной трапеции ограниченной графиком функции, <br>
 осью OX, нижним пределом интегрирования и верхним пределом.<br>
-Повторное нажатие клавиши i скрывает расчет интеграла.
+Повторное нажатие клавиши S скрывает расчет интеграла.
 <li>Нажатием клавиши P можно задать точность построения графика.<br>
 Это количество точек используемых для построения.<br>
 По умолчанию используется 1000 точек для всего графика.<br>
@@ -149,6 +151,7 @@ var arFunc=[]  // array of function
 var editFunc,editColor
 var showD=false// show derivative
 var showI=false// show integral
+var showS=false// show area
 var lowLimit=0,upLimit=1
 var precision=1000
 
@@ -270,6 +273,8 @@ function AddFunc(func){
       'Math.cos(x)<br>'+
       'Math.tan(x)<br>'+
       'Math.sqrt(x)<br>'+
+      'Math.pow(x,3)<br>'+
+      'Math.log(x)<br>'+      
       'Math.exp(x)<br>'      
       )
       editFunc=funcTxt;
@@ -373,7 +378,7 @@ document.addEventListener('keydown', function(event) {
 if (inputVisible)
    return
 var change=false
-console.log(event.keyCode)
+//console.log(event.keyCode)
 let dd=(maxX - minX)/10
 if (event.keyCode==38){// ^
       minY-=dd
@@ -415,6 +420,10 @@ else if (event.keyCode==68){// D
    }
 else if (event.keyCode==73){// I
       showI=!showI
+      change=true
+   }   
+else if (event.keyCode==83){// S
+      showS=!showS
       change=true
    }
 else if (event.keyCode==80){// P precision
@@ -460,7 +469,7 @@ ctx.strokeStyle = "#666666"
 
 let pos
 ctx.fillStyle = "white";
-ctx.font = "14px sans-serif";
+ctx.font = "18px sans-serif";
 
 if ((lenG>1) && (lenG<50)){
    let x=Math.ceil(minX)   //рисуем вертикальные линии
@@ -507,19 +516,25 @@ for(let f of arFunc){
 }
 }
 
-function drawFunc(f,ff){
+function drawFunc(f,ff){   // функция является 1й в списке функций
 ctx.strokeStyle = '#'+f['col']
 let x=minX
 let dx=(maxX-minX)/precision
 let res,resOld,dy,pr
 let s=0
-let posOy=y2scr(0)
+let Perv=0
+let posOy=y2scr(0)//координата оси OY
+let arPerv= [], arX=[];
+let deltaI=false
+let closeZero=99999
 while (x<maxX){
    res=eval(f['txt'])
    
-   if (showI && ff){
+   if (showS && ff){
       if ((x>=lowLimit)&&(x<=upLimit)){
-         drawPointLine(x,res,posOy,f['col'])
+         drawPointLine(x,res,
+            posOy,//координата оси OY
+            f['col'])
          s=s+res*dx
       }else
          drawPoint(x,res)
@@ -527,22 +542,48 @@ while (x<maxX){
       drawPoint(x,res)
    }
 
+   if (showI && ff && !isNaN(res)){
+      if (Math.abs(res)<Math.abs(closeZero)){
+         closeZero=res
+         deltaI=Perv
+      }
+      arX.push(x)
+      arPerv.push(Perv)
+//      drawPoint(x,Perv)
+      Perv=Perv + res * dx      
+   }
+
    if (showD){
       dy=res-resOld
       pr=dy/dx
+//      pr=Math.log(x)
       drawPoint(x,pr)   //derivative
       resOld=res
    }
 
    x=x+dx
 }
+  
 if (showI && ff){
+   console.log("closeZero="+closeZero)
+   console.log("deltaI="+deltaI)
+   ctx.strokeStyle = '#00FF00'
+   let n
+   let lenA=arX.length
+   for(n=0;n<lenA;n++){
+      drawPoint(arX[n],arPerv[n]-deltaI)
+   }
+}
+
+
+if (showS && ff){
    ctx.fillStyle="#FFFF00"
    ctx.font = "20px sans-serif";
    s=Math.round(s*10000)/10000
    ctx.fillText('S='+s+ ' (Low limit='+lowLimit+' Up limit='+upLimit+' )', 200, 30);
 }
 }
+
 setSize()
 drawGrid()
 drawAllFunc()
