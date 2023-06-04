@@ -168,6 +168,8 @@ var editFunc,editColor
 var showD=false// show derivative
 var showI=false// show integral
 var showS=false// show area
+var toFind=0
+
 var lowLimit=0,upLimit=1
 var precision=1000
 
@@ -293,7 +295,8 @@ function AddFunc(func){
       'Math.sqrt(x)<br>'+
       'Math.pow(x,3)<br>'+
       'Math.log(x)<br>'+      
-      'Math.exp(x)<br>'      
+      'Math.exp(x)<br>'+
+	  'Math.pow(x,5-1)*Math.exp(-x)<br>'
       )
       editFunc=funcTxt;
 
@@ -341,8 +344,167 @@ grHeight=document.documentElement.clientHeight-20
 c1.width=grWidth
 c1.height=grHeight
 }
-var ctx= c1.getContext('2d');
+/////////////////////////////////////
+function myRound(x){
+return Math.round(x*1000)/1000
+}
 
+/////////////////////////////////////
+function findMax(x,fMax){
+console.log(x)
+let func=arFunc[0]['txt']
+let newY,oldY,oldX
+let dx=(maxX-minX)/ ( precision * 10 )
+if (fMax==1)
+	ctx.strokeStyle = '#FFFFFF';
+else if (fMax==2)
+	ctx.strokeStyle = '#FF00FF';
+else if (fMax==3)
+	ctx.strokeStyle = '#00FFFF';
+
+console.log("Start:"+ " x="+x)
+newY=eval(func)
+let st=0,t
+do{
+	oldX=x
+	oldY=newY
+	drawPoint(x,newY)
+	
+	if (st==0)
+	{
+		x=x+dx
+		newY=eval(func)
+		if (	(fMax==1) && (newY>oldY) || 
+				(fMax==2) && (newY<oldY) ||
+				(fMax==3) && ((Math.abs(newY) < Math.abs(oldY) ) )
+				)
+			st=1
+		else
+		{
+			st=-1
+			console.log("F st="+st, " x="+x+ " oldY="+oldY+" newY="+newY)
+			t=newY
+			newY=oldY
+			oldY=t
+			x=oldX
+			console.log("F2 st="+st, " x="+x+ " oldY="+oldY+" newY="+newY)
+		}
+	}
+	else
+	{
+		x=x+dx*st
+		newY=eval(func)
+	}
+	console.log("st="+st, " x="+x+ " oldY="+oldY+" newY="+newY)
+
+	if ((x>maxX) || (x<minX))
+		return;
+
+}while( (fMax==1) && (newY>oldY) || 
+		(fMax==2) && (newY<oldY) ||
+		(fMax==3) && ((Math.abs(newY) < Math.abs(oldY))	)
+		)
+
+ib_act=function(str){}
+let sss
+if (fMax==1)
+	sss='max';
+else if (fMax==2)
+	sss='min';
+else if (fMax==3)
+	sss='zero';
+
+let capt
+if (st==1)
+	capt="Found "+sss+" right"
+else
+	capt="Found "+sss+" left"
+
+showInpBox(myRound(oldX)+';'+myRound(oldY),capt,"")
+}
+/////////////////////////////////////
+function findZero(x){
+console.log(x)
+let func=arFunc[0]['txt']
+let newY,oldY,oldX
+let dx=(maxX-minX)/ ( precision * 0.3 )
+ctx.strokeStyle = '#FFFF00'
+console.log("findZero:"+ " x="+x)
+newY=eval(func)
+let st=0,t
+do{
+	oldX=x
+	oldY=newY
+	drawPoint(x,newY)
+	
+	if (st==0)
+	{
+		x=x+dx
+		newY=eval(func)
+		if (Math.abs(newY) < Math.abs(oldY))//!!
+			st=1
+		else
+		{
+			st=-1
+			console.log("F st="+st, " x="+x+ " oldY="+oldY+" newY="+newY)
+			t=newY
+			newY=oldY
+			oldY=t
+			x=oldX
+			console.log("F2 st="+st, " x="+x+ " oldY="+oldY+" newY="+newY)
+		}
+	}
+	else
+	{
+		x=x+dx*st
+		newY= eval(func)
+	}
+	console.log("st="+st, " x="+x+ " oldY="+oldY+" newY="+newY)
+
+}while( Math.abs(newY) < Math.abs(oldY)) //!!
+
+ib_act=function(str){}
+let capt
+if (st==1)
+	capt="Found zero right"
+else
+	capt="Found zero left"
+
+showInpBox(myRound(oldX)+';'+myRound(oldY),capt,"")
+}
+
+/////////////////////////////////////
+c1.addEventListener("mousedown", (e) => {
+	let vx=scr2x(e.offsetX)
+	if (toFind==1)
+		findMax(vx,1)
+	else if (toFind==2)
+		findMax(vx,2);
+	else if (toFind==3)
+		findMax(vx,3);
+
+toFind=0
+console.log("");
+
+});
+/////////////////////////////////////
+c1.addEventListener("mousemove", (e) => {
+	let x=10,y=70
+	ctx.fillStyle="#000000"
+	ctx.fillRect(x, y-18, 150, 20)
+	ctx.fillStyle="#FFFFFF"
+
+	let vx=scr2x(e.offsetX)
+	vx=Math.round(vx*1000)/1000
+	let vy=scr2y(e.offsetY)
+	vy=Math.round(vy*1000)/1000
+
+	ctx.fillText(vx+';'+vy, x,y);
+}
+);
+
+
+var ctx= c1.getContext('2d');
 var 
    minX=-5,maxX=5,
    minY=-1,maxY;
@@ -352,12 +514,19 @@ var scale // сколько пикселов в единице
 //c.width=   window.innerWidth
 //c.heigth = window.innerHeight
 
+
 function x2scr(x){
 return (x-minX) * scale
 }
-
 function y2scr(y){
 return grHeight - (y - minY) * scale
+}
+
+function scr2x(x){
+return x/scale +minX
+}
+function scr2y(y){
+return (grHeight - y) / scale + minY
 }
 
 function drawPoint(x,y){
@@ -396,7 +565,7 @@ document.addEventListener('keydown', function(event) {
 if (inputVisible)
    return
 var change=false
-//console.log(event.keyCode)
+console.log(event.keyCode)
 let dd=(maxX - minX)/10
 if (event.keyCode==38){// ^
       minY-=dd
@@ -439,7 +608,16 @@ else if (event.keyCode==68){// D
 else if (event.keyCode==73){// I
       showI=!showI
       change=true
-   }   
+   }
+else if (event.keyCode==76){// L
+	toFind=3
+   }
+else if (event.keyCode==77){// M
+	toFind=1
+   }
+else if (event.keyCode==78){// N
+	toFind=2
+   }
 else if (event.keyCode==83){// S
       showS=!showS
       change=true
@@ -534,7 +712,7 @@ for(let f of arFunc){
 }
 }
 
-function drawFunc(f,ff){   // функция является 1й в списке функций
+function drawFunc(f,ff){   //ff = true если функция является 1й в списке функций
 ctx.strokeStyle = '#'+f['col']
 let x=minX
 let dx=(maxX-minX)/precision
